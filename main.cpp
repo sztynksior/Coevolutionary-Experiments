@@ -6,6 +6,44 @@ public:
     virtual void performCrossover(std::list<int>& parent1, std::list<int>& parent2) = 0;
 };
 
+class Mutation {
+protected:
+    int mutationProbability;
+public:
+    Mutation(int prob) : mutationProbability(prob) {}
+    virtual void performMutation(std::list<int>& genes) = 0;
+};
+
+class FitnessFunction {
+public:
+    virtual double evaluate(const std::list<int>& genes) const = 0;
+};
+
+class Chromosome {
+    std::list<int> genes;
+    Crossover* crossover;
+    Mutation* mutation;
+public: 
+    Chromosome(
+        std::list<int> g, Crossover* c, Mutation* m
+    ) : genes(std::move(g)), crossover(c), mutation(m) {};
+
+    void print() const {
+        for (const auto& gene : genes) {
+            std::cout << gene << " ";
+        }
+        std::cout << std::endl;
+    }
+
+    void performCrossover(Chromosome& other) {
+        crossover->performCrossover(genes, other.genes);
+    }
+
+    void performMutation() {
+        mutation->performMutation(genes);
+    }
+};
+
 class OnePointCrossover : public Crossover {
     public:
     OnePointCrossover() = default;
@@ -23,38 +61,44 @@ class OnePointCrossover : public Crossover {
     }
 };
 
-class Chromosome {
-    std::list<int> genes;
-    Crossover* crossover;
+class SwapMutation : public Mutation {
+    public:
+        SwapMutation(int prob) : Mutation(prob) {}
+        void performMutation(std::list<int>& genes) {
+            if (std::rand() % 100 < mutationProbability) {
+                int firstSwapPosition;
+                int secondSwapPosition;
+                do {
+                    firstSwapPosition = std::rand() % genes.size();
+                    secondSwapPosition = std::rand() % genes.size();
+                } while (firstSwapPosition == secondSwapPosition);
 
-    public: 
-
-    Chromosome(
-        std::list<int> g, Crossover* c
-    ) : genes(std::move(g)), crossover(c) {};
-
-    void print() const {
-        for (const auto& gene : genes) {
-            std::cout << gene << " ";
+                auto firstSwapPositionIt = std::next(genes.begin(), firstSwapPosition);
+                auto secondSwapPositionIt = std::next(genes.begin(), secondSwapPosition);
+                std::swap(*firstSwapPositionIt, *secondSwapPositionIt);
+            }
         }
-        std::cout << std::endl;
-    }
-
-    void performCrossover(Chromosome& other) {
-        crossover->performCrossover(genes, other.genes);
-    }
 };
 
 int main() {
     srand(time(0));
-
+    std::cout << std::rand() << std::endl;
     Crossover* crossover = new OnePointCrossover();
-    Chromosome parent1({11, 22, 33, 44, 55}, crossover);
-    Chromosome parent2({1, 2, 3, 4, 5}, crossover);
+    Mutation* mutation = new SwapMutation(100);
+    Chromosome parent1({11, 22, 33, 44, 55}, crossover, mutation);
+    Chromosome parent2({1, 2, 3, 4, 5}, crossover, mutation);
 
+    std::cout << "Before crossover:" << std::endl;
     parent1.performCrossover(parent2);
     parent1.print();
     parent2.print();
+
+    std::cout << "Before mutation:" << std::endl;
+    parent1.performMutation();
+    parent1.print();
+
+    delete crossover;
+    delete mutation;
 
     return 0;
 }

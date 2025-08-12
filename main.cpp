@@ -23,10 +23,11 @@ class Chromosome {
     std::list<int> genes;
     Crossover* crossover;
     Mutation* mutation;
+    FitnessFunction* fitnessFunction;
 public: 
     Chromosome(
-        std::list<int> g, Crossover* c, Mutation* m
-    ) : genes(std::move(g)), crossover(c), mutation(m) {};
+        std::list<int> g, Crossover* c, Mutation* m, FitnessFunction* f
+    ) : genes(std::move(g)), crossover(c), mutation(m), fitnessFunction(f) {};
 
     void print() const {
         for (const auto& gene : genes) {
@@ -41,6 +42,10 @@ public:
 
     void performMutation() {
         mutation->performMutation(genes);
+    }
+
+    void evaluateFitness() {
+        fitnessFunction->evaluate(genes);
     }
 };
 
@@ -80,13 +85,27 @@ class SwapMutation : public Mutation {
         }
 };
 
+class RastriginFitness : public FitnessFunction {
+    
+public:
+    double evaluate(const std::list<int>& genes) const override {
+        constexpr double pi = 3.14159265358979323846;
+        double sum = 0.0;
+        for (const auto& gene : genes) {
+            sum += gene * gene - 3.0 * std::cos(2.0 * pi * gene);
+        }
+        return 3 * genes.size() + sum;
+    }
+};
+
 int main() {
     srand(time(0));
     std::cout << std::rand() << std::endl;
     Crossover* crossover = new OnePointCrossover();
     Mutation* mutation = new SwapMutation(100);
-    Chromosome parent1({11, 22, 33, 44, 55}, crossover, mutation);
-    Chromosome parent2({1, 2, 3, 4, 5}, crossover, mutation);
+    FitnessFunction* fitnessFunction = new RastriginFitness();
+    Chromosome parent1({11, 22, 33, 44, 55}, crossover, mutation, fitnessFunction);
+    Chromosome parent2({1, 2, 3, 4, 5}, crossover, mutation, fitnessFunction);
 
     std::cout << "Before crossover:" << std::endl;
     parent1.performCrossover(parent2);
@@ -99,6 +118,7 @@ int main() {
 
     delete crossover;
     delete mutation;
+    delete fitnessFunction;
 
     return 0;
 }

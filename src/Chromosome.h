@@ -1,7 +1,8 @@
 #pragma once
 
 #include <list>
-#include "ChromosomeInitializer.h"
+#include <memory>
+#include "GeneInitializer.h"
 #include "Crossover.h"
 #include "Mutation.h"
 #include "FitnessFunction.h"
@@ -9,13 +10,16 @@
 template<typename T>
 class Chromosome {
     std::list<T> genes;
-    Crossover<T>* crossover;
-    Mutation<T>* mutation;
-    FitnessFunction* fitnessFunction;
-public: 
+    std::shared_ptr<Crossover<T>> crossover;
+    std::shared_ptr<Mutation<T>> mutation;
+    std::shared_ptr<FitnessFunction> fitnessFunction;
+public:
     Chromosome(
-        ChromosomeInitializer<T>* initializer , Crossover<T>* c, Mutation<T>* m, FitnessFunction* f
-    ) : genes(initializer->initialize()), crossover(c), mutation(m), fitnessFunction(f) {};
+        std::shared_ptr<GeneInitializer<T>> initializer,
+        std::shared_ptr<Crossover<T>> crossover,
+        std::shared_ptr<Mutation<T>> mutation,
+        std::shared_ptr<FitnessFunction> fitnessFunction
+    ) : genes(initializer->initialize()), crossover(crossover), mutation(mutation), fitnessFunction(fitnessFunction) {};
 
     void print() const {
         for (const auto& gene : genes) {

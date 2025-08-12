@@ -17,7 +17,9 @@ class OnePointCrossover : public Crossover {
         auto spliceSize = parent1.size() - crossoverPoint;
 
         parent1.splice(parent1.end(), parent2, secondParentCrossPoint, parent2.end());
-        parent2.splice(parent2.end(), parent1, firstParentCorssPoint, std::prev(parent1.end(), spliceSize));
+        parent2.splice(
+            parent2.end(), parent1, firstParentCorssPoint, std::prev(parent1.end(), spliceSize)
+        );
     }
 };
 

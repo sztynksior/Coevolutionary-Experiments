@@ -4,20 +4,20 @@
 
 template<typename T>
 class Crossover {
-    int crossoverProbability;
+    double crossoverProbability;
 protected:
     bool shouldCrossover() const {
-        return std::rand() % 100 < crossoverProbability;
+        return std::rand() / double(RAND_MAX) < crossoverProbability;
     }
 public:
-    Crossover(int prob) : crossoverProbability(prob) {}
+    Crossover(double prob) : crossoverProbability(prob) {}
     virtual void performCrossover(std::list<T>& parent1, std::list<T>& parent2) = 0;
 };
 
 template<typename T>
 class OnePointCrossover : public Crossover<T> {
     public:
-    OnePointCrossover(int prob) : Crossover<T>(prob) {}
+    OnePointCrossover(double prob) : Crossover<T>(prob) {}
     void performCrossover(std::list<T>& parent1, std::list<T>& parent2) override {
         if (!this->shouldCrossover()) {
             return;
